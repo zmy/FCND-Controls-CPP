@@ -70,10 +70,15 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-  cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
-  cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
-  cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
-  cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
+  float l = L / sqrt(2.f);
+  float t_x = momentCmd.x / l;
+  float t_y = momentCmd.y / l;
+  float t_z = -momentCmd.z / kappa;
+
+  cmd.desiredThrustsN[0] = (collThrustCmd + t_x + t_y + t_z) / 4.f; // front left
+  cmd.desiredThrustsN[1] = (collThrustCmd - t_x + t_y - t_z) / 4.f; // front right
+  cmd.desiredThrustsN[3] = (collThrustCmd - t_x - t_y + t_z) / 4.f; // rear right
+  cmd.desiredThrustsN[2] = (collThrustCmd + t_x - t_y - t_z) / 4.f; // rear left
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -98,7 +103,8 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-  
+  V3F MOI(Ixx, Iyy, Izz);
+  momentCmd = MOI * kpPQR * (pqrCmd - pqr);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -129,7 +135,13 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-
+  float c_d = collThrustCmd / mass;
+  float target_R13 = -CONSTRAIN(accelCmd[0] / c_d, -maxTiltAngle, maxTiltAngle);
+  float target_R23 = -CONSTRAIN(accelCmd[1] / c_d, -maxTiltAngle, maxTiltAngle);
+  float b_x_c_dot = kpBank * (target_R13 - R(0, 2));
+  float b_y_c_dot = kpBank * (target_R23 - R(1, 2));
+  pqrCmd[0] = (R(1, 0) * b_x_c_dot - R(0, 0) * b_y_c_dot) / R(2, 2);
+  pqrCmd[1] = (R(1, 1) * b_x_c_dot - R(0, 1) * b_y_c_dot) / R(2, 2);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
