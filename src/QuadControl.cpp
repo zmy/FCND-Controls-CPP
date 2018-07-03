@@ -173,7 +173,12 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
+  velZCmd += kpPosZ * (posZCmd - posZ);
+  velZCmd = CONSTRAIN(velZCmd, -maxDescentRate, maxAscentRate);
 
+  accelZCmd += kpVelZ * (velZCmd - velZ);
+
+  thrust = mass * ((float)CONST_GRAVITY - accelZCmd) / R(2, 2);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
@@ -211,7 +216,14 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-  
+  velCmd = kpPosXY * (posCmd - pos);
+  if (velCmd.magXY() > maxSpeedXY)
+	  velCmd *= maxSpeedXY / velCmd.magXY();
+
+  accelCmd += kpPosXY * (posCmd - pos) + kpVelXY * (velCmd - vel);
+  accelCmd.z = 0;
+  if (accelCmd.magXY() > maxAccelXY)
+	  accelCmd *= maxAccelXY / accelCmd.magXY();
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -234,6 +246,7 @@ float QuadControl::YawControl(float yawCmd, float yaw)
   float yawRateCmd=0;
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
+  yawRateCmd = kpYaw * fmodf(yawCmd - yaw, 2 * F_PI);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
