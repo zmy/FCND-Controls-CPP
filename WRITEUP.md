@@ -37,3 +37,8 @@ Result:
 
 Directly running the controller and parameter set from Step 3 does not work well for the green and red quad -- The green one runs a shifted curve path and the red one stops too early. After relaxing the parameters, green one becomes better, but the red one still has a constant error. Then by adding the I term in `AltitudeControl()`, and adjust the parameters properly, we get nice paths for all the three quads.
 
+# Scenario 5: Follow Trajectory
+Result:
+<p align="center">
+<img src="animations/s5.gif" width="500"/>
+</p>
